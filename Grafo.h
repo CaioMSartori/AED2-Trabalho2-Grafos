@@ -32,6 +32,7 @@ public:
     Grafo(int maxV);   // Construtor da classe
 
     void imprimirGrafo();   // Método de impressão do grafo/rede social
+    void mostrarUsuario(const string& nome);   // Método de exibição de dados do usuário
     bool existeVertice(const string& nome);   // Método de busca de usuário
     bool existeAresta(const string& u, const string& v);   // Método de busca de conexão
 
@@ -42,6 +43,7 @@ public:
     void removerAresta(const string& u, const string& v);   // Método de remoção de conexão
 
     void BFS(const string& origem);   // Método de busca em largura
+    void componentesConexas();   // Método de geração de componentes conexos do grafo usando busca em largura
 };
 
 #endif

@@ -17,60 +17,110 @@ int main() {
         cout << "3. Remover usuario\n";
         cout << "4. Remover conexao\n";
         cout << "5. Buscar usuario\n";
-        cout << "6. Imprimir grafo completo\n";
-        cout << "7. Busca em largura (a partir de um usuario)\n";
-        cout << "0. Sair\n";
+        cout << "6. Buscar conexao\n";
+        cout << "7. Imprimir grafo completo\n";
+        cout << "8. Busca em largura (a partir de um usuario)\n";
+        cout << "9. Mostrar componentes conexas\n";
+        cout << "0. Sair\n\n";
         cout << "Escolha: ";
-        cin >> opcao;
+        while (!(cin >> opcao)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Valor invalido! Digite um numero inteiro: ";
+        }
+        cout << endl;
 
         switch (opcao) {
         case 1:
+            cin.ignore();
             cout << "Nome: ";
-            cin >> nome;
+            getline(cin, nome);
             cout << "Idade: ";
-            cin >> idade;
+            while (!(cin >> idade)) {
+                cin.clear();
+                cin.ignore(1000, '\n');
+                cout << "Valor invalido! Digite um numero inteiro: ";
+            }
+            cout << endl;
             g.adicionarVertice(nome, idade);
             break;
 
         case 2:
+            cin.ignore();
             cout << "Usuario 1: ";
-            cin >> nome;
+            getline(cin, nome);
             cout << "Usuario 2: ";
-            cin >> nome2;
+            getline(cin, nome2);
+            cout << endl;
             g.adicionarAresta(nome, nome2);
             break;
 
         case 3:
+            cin.ignore();
             cout << "Nome do usuario: ";
-            cin >> nome;
+            getline(cin, nome);
+            cout << endl;
             g.removerVertice(nome);
             break;
 
         case 4:
+            cin.ignore();
             cout << "Usuario 1: ";
-            cin >> nome;
+            getline(cin, nome);
             cout << "Usuario 2: ";
-            cin >> nome2;
+            getline(cin, nome2);
+            cout << endl;
             g.removerAresta(nome, nome2);
             break;
 
         case 5:
+            cin.ignore();
             cout << "Nome do usuario: ";
-            cin >> nome;
-            if (g.existeVertice(nome))
-                cout << "Usuario encontrado.\n";
-            else
+            getline(cin, nome);
+            cout << endl;
+            if (g.existeVertice(nome)) {
+                cout << "Usuario encontrado:\n";
+                g.mostrarUsuario(nome);
+            } else {
                 cout << "Usuario nao existe.\n";
+            }
             break;
 
         case 6:
-            g.imprimirGrafo();
+            cin.ignore();
+            cout << "Usuario 1: ";
+            getline(cin, nome);
+            cout << "Usuario 2: ";
+            getline(cin, nome2);
+            cout << endl;
+
+            if (g.existeAresta(nome, nome2)) {
+                cout << "Conexao existe entre '" << nome << "' e '" << nome2 << "'.\n\n";
+
+                cout << "=== Dados do Usuario 1 ===\n";
+                g.mostrarUsuario(nome);
+                cout << endl;
+
+                cout << "=== Dados do Usuario 2 ===\n";
+                g.mostrarUsuario(nome2);
+            } else {
+                cout << "Conexao nao existe.\n";
+            }
             break;
 
         case 7:
+            g.imprimirGrafo();
+            break;
+
+        case 8:
+            cin.ignore();
             cout << "Origem: ";
-            cin >> nome;
+            getline(cin, nome);
             g.BFS(nome);
+            break;
+
+        case 9:
+            g.componentesConexas();
             break;
 
         case 0:
