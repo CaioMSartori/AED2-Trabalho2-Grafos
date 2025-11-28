@@ -1,3 +1,9 @@
+// Caio Monteiro Sartori   NUSP: 15444598
+// Mateus Henrique Jesus da Silva Carriel   NUSP: 15698362
+// Murilo Augusto Jorge   NUSP: 15552251
+
+// Grafo.h -> Definição da classe de Grafos
+
 #ifndef GRAFO_H
 #define GRAFO_H
 
@@ -9,12 +15,14 @@ using namespace std;
 struct Usuario {
     string nome;
     int idade;
-    int conexoes;   // Número de conexões
+    int seguindo;
+    int seguidores;
 
     Usuario(string n = "", int i = 0) {   // Inicializador de usuário vazio
         nome = n;
         idade = i;
-        conexoes = 0;
+        seguindo = 0;
+        seguidores = 0;
     }
 };
 
@@ -33,6 +41,7 @@ public:
 
     void imprimirGrafo();   // Método de impressão do grafo/rede social
     void mostrarUsuario(const string& nome);   // Método de exibição de dados do usuário
+
     bool existeVertice(const string& nome);   // Método de busca de usuário
     bool existeAresta(const string& u, const string& v);   // Método de busca de conexão
 
@@ -42,8 +51,9 @@ public:
     void removerVertice(const string& nome);   // Método de remoção de usuário
     void removerAresta(const string& u, const string& v);   // Método de remoção de conexão
 
-    void BFS(const string& origem);   // Método de busca em largura
-    void componentesConexas();   // Método de geração de componentes conexos do grafo usando busca em largura
+    void BFS(const string& origem);   // Método de busca em largura geral
+    void BFS_Caminho(const string& origem, const string& destino);   // Método de busca em largura com usuário final
+    void recomendarAmigos(const string& nome);   // Método de recomendação de amigos com BFS
 };
 
 #endif

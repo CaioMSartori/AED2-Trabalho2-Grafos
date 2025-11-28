@@ -1,3 +1,9 @@
+// Caio Monteiro Sartori   NUSP: 15444598
+// Mateus Henrique Jesus da Silva Carriel   NUSP: 15698362
+// Murilo Augusto Jorge   NUSP: 15552251
+
+// main.cpp -> Menu e teste da classe de Grafos
+
 #include "Grafo.h"
 #include <iostream>
 
@@ -19,8 +25,9 @@ int main() {
         cout << "5. Buscar usuario\n";
         cout << "6. Buscar conexao\n";
         cout << "7. Imprimir grafo completo\n";
-        cout << "8. Busca em largura (a partir de um usuario)\n";
-        cout << "9. Mostrar componentes conexas\n";
+        cout << "8. Busca em largura - Geral\n";
+        cout << "9. Busca em largura - Com usuario final\n";
+        cout << "10. Recomendar conexoes\n";
         cout << "0. Sair\n\n";
         cout << "Escolha: ";
         while (!(cin >> opcao)) {
@@ -95,7 +102,7 @@ int main() {
             cout << endl;
 
             if (g.existeAresta(nome, nome2)) {
-                cout << "Conexao existe entre '" << nome << "' e '" << nome2 << "'.\n\n";
+                cout << "Usuario '" << nome << "' segue '" << nome2 << "'.\n\n";
 
                 cout << "=== Dados do Usuario 1 ===\n";
                 g.mostrarUsuario(nome);
@@ -120,7 +127,20 @@ int main() {
             break;
 
         case 9:
-            g.componentesConexas();
+            cin.ignore();
+            cout << "Usuario de origem: ";
+            getline(cin, nome);
+            cout << "Usuario destino: ";
+            getline(cin, nome2);
+            g.BFS_Caminho(nome, nome2);
+            break;
+
+        case 10:
+            cin.ignore();
+            cout << "Nome do usuario: ";
+            getline(cin, nome);
+            cout << endl;
+            g.recomendarAmigos(nome);
             break;
 
         case 0:

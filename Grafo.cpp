@@ -1,9 +1,14 @@
+// Caio Monteiro Sartori   NUSP: 15444598
+// Mateus Henrique Jesus da Silva Carriel   NUSP: 15698362
+// Murilo Augusto Jorge   NUSP: 15552251
+
+// Grafo.cpp -> Implementação dos métodos da classe de Grafos
+
 #include "Grafo.h"
 #include <iostream>
 #include <queue>
 #include <iomanip>
-#include <vector>
-#include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -32,21 +37,29 @@ void Grafo::mostrarUsuario(const string& nome) {
 
     cout << "Nome: " << usuarios[i].nome << "\n";
     cout << "Idade: " << usuarios[i].idade << "\n";
-    cout << "Conexoes: " << usuarios[i].conexoes << "\n";
+    cout << "Seguindo: " << usuarios[i].seguindo << "\n";
+    cout << "Seguidores: " << usuarios[i].seguidores << "\n\n";
 
-    cout << "Conectado com: ";
-
-    bool tem = false;
+    cout << "Segue: ";
+    bool temSeguindo = false;
     for (int j = 0; j < numVertices; j++) {
         if (matriz[i][j] == 1) {
             cout << usuarios[j].nome << ", ";
-            tem = true;
+            temSeguindo = true;
         }
     }
+    if (!temSeguindo) cout << "Ninguem";
+    cout << "\n";
 
-    if (!tem)
-        cout << "Nenhum";
-
+    cout << "Seguidores: ";
+    bool temSeg = false;
+    for (int j = 0; j < numVertices; j++) {
+        if (matriz[j][i] == 1) {
+            cout << usuarios[j].nome << ", ";
+            temSeg = true;
+        }
+    }
+    if (!temSeg) cout << "Nenhum";
     cout << "\n";
 }
 
@@ -57,7 +70,6 @@ bool Grafo::existeVertice(const string& nome) {
 bool Grafo::existeAresta(const string& u, const string& v) {
     int a = indiceDe(u);
     int b = indiceDe(v);
-
     if (a == -1 || b == -1) return false;
     return matriz[a][b] == 1;
 }
@@ -81,7 +93,7 @@ void Grafo::adicionarVertice(const string& nome, int idade) {
 
 void Grafo::adicionarAresta(const string& u, const string& v) {
     if (u == v) {
-        cout << "Um usuario nao pode se conectar com ele mesmo.\n";
+        cout << "Um usuario nao pode seguir a si mesmo.\n";
         return;
     }
 
@@ -94,17 +106,16 @@ void Grafo::adicionarAresta(const string& u, const string& v) {
     }
 
     if (matriz[a][b] == 1) {
-        cout << "Conexao ja existe.\n";
+        cout << "Usuario '" << u << "' ja segue '" << v << "'.\n";
         return;
     }
 
     matriz[a][b] = 1;
-    matriz[b][a] = 1;
 
-    usuarios[a].conexoes++;
-    usuarios[b].conexoes++;
+    usuarios[a].seguindo++;
+    usuarios[b].seguidores++;
 
-    cout << "Conexao criada entre '" << u << "' e '" << v << "'.\n";
+    cout << "'" << u << "' agora segue '" << v << "'.\n";
 }
 
 void Grafo::removerVertice(const string& nome) {
@@ -115,33 +126,36 @@ void Grafo::removerVertice(const string& nome) {
         return;
     }
 
-    // Remover conexões com os outros usuários
-    for (int i = 0; i < numVertices; i++) {
-        if (matriz[idx][i] == 1)
-            usuarios[i].conexoes--;
+    for (int j = 0; j < numVertices; j++) {
+        if (matriz[idx][j] == 1) {
+            usuarios[j].seguidores--;
+        }
     }
 
-    // Deslocar usuários
+    for (int i = 0; i < numVertices; i++) {
+        if (matriz[i][idx] == 1) {
+            usuarios[i].seguindo--;
+        }
+    }
+
     for (int i = idx; i < numVertices - 1; i++)
         usuarios[i] = usuarios[i + 1];
 
-    // Deslocar linhas para cima
     for (int i = idx; i < numVertices - 1; i++)
         matriz[i] = matriz[i + 1];
 
-    // Deslocar colunas para a esquerda
     for (int i = 0; i < numVertices - 1; i++)
         for (int j = idx; j < numVertices - 1; j++)
             matriz[i][j] = matriz[i][j + 1];
 
     for (int i = 0; i < numVertices; i++) {
-        matriz[numVertices - 1][i] = 0;  // zera última linha
-        matriz[i][numVertices - 1] = 0;  // zera última coluna
+        matriz[numVertices - 1][i] = 0;
+        matriz[i][numVertices - 1] = 0;
     }
 
     numVertices--;
 
-    cout << "Usuario '" << nome << "' removido da rede.\n";
+    cout << "Usuario '" << nome << "' removido.\n";
 }
 
 void Grafo::removerAresta(const string& u, const string& v) {
@@ -159,13 +173,9 @@ void Grafo::removerAresta(const string& u, const string& v) {
     }
 
     matriz[a][b] = 0;
-    matriz[b][a] = 0;
 
-    usuarios[a].conexoes--;
-    usuarios[b].conexoes--;
-
-    if (usuarios[a].conexoes < 0) usuarios[a].conexoes = 0;
-    if (usuarios[b].conexoes < 0) usuarios[b].conexoes = 0;
+    usuarios[a].seguindo--;
+    usuarios[b].seguidores--;
 
     cout << "Conexao removida.\n";
 }
@@ -181,30 +191,12 @@ void Grafo::imprimirGrafo() {
     for (int i = 0; i < numVertices; i++) {
         cout << usuarios[i].nome
              << " | Idade: " << usuarios[i].idade
-             << " | Conexoes: " << usuarios[i].conexoes
+             << " | Seguindo: " << usuarios[i].seguindo
+             << " | Seguidores: " << usuarios[i].seguidores
              << "\n";
     }
 
-    cout << "\n===== Arestas (Conexoes) =====\n\n";
-
-    for (int i = 0; i < numVertices; i++) {
-        cout << usuarios[i].nome << " -> ";
-
-        bool tem = false;
-        for (int j = 0; j < numVertices; j++) {
-            if (matriz[i][j] == 1) {
-                cout << usuarios[j].nome << ", ";
-                tem = true;
-            }
-        }
-
-        if (!tem)
-            cout << "Nenhuma";
-
-        cout << "\n";
-    }
-
-    cout << "\n===== Matriz de Adjacencia =====\n\n";
+    cout << "\n===== Matriz de Adjacencia (Direcionada) =====\n\n";
 
     int largura = 10;
     cout << setw(largura) << " ";
@@ -223,7 +215,6 @@ void Grafo::imprimirGrafo() {
 
 void Grafo::BFS(const string& origem) {
     int start = indiceDe(origem);
-
     if (start == -1) {
         cout << "Usuario nao encontrado.\n";
         return;
@@ -251,49 +242,114 @@ void Grafo::BFS(const string& origem) {
     }
 
     cout << "\nBusca em largura a partir de '" << origem << "': ";
-
     for (size_t i = 0; i < ordem.size(); i++) {
         cout << usuarios[ordem[i]].nome;
         if (i < ordem.size() - 1) cout << ", ";
     }
-
     cout << "\n";
 }
 
-void Grafo::componentesConexas() {
-    if (numVertices == 0) {
-        cout << "Nao ha usuarios cadastrados.\n";
+void Grafo::BFS_Caminho(const string& origem, const string& destino) {
+    int start = indiceDe(origem);
+    int end = indiceDe(destino);
+
+    if (start == -1 || end == -1) {
+        cout << "Origem ou destino nao encontrado.\n";
         return;
     }
 
     vector<bool> visitado(numVertices, false);
-    int componenteID = 1;
+    vector<int> anterior(numVertices, -1);
+    queue<int> fila;
 
-    cout << "===== Componentes Conexas =====\n\n";
+    visitado[start] = true;
+    fila.push(start);
 
-    for (int i = 0; i < numVertices; i++) {
-        if (!visitado[i]) {
-            cout << "Componente " << componenteID++ << ": ";
+    bool achou = false;
 
-            queue<int> q;
-            q.push(i);
-            visitado[i] = true;
+    while (!fila.empty()) {
+        int atual = fila.front();
+        fila.pop();
 
-            while (!q.empty()) {
-                int atual = q.front();
-                q.pop();
+        if (atual == end) {
+            achou = true;
+            break;
+        }
 
-                cout << usuarios[atual].nome << " ";
-
-                for (int j = 0; j < numVertices; j++) {
-                    if (matriz[atual][j] == 1 && !visitado[j]) {
-                        visitado[j] = true;
-                        q.push(j);
-                    }
-                }
+        for (int i = 0; i < numVertices; i++) {
+            if (matriz[atual][i] == 1 && !visitado[i]) {
+                visitado[i] = true;
+                anterior[i] = atual;
+                fila.push(i);
             }
+        }
+    }
 
-            cout << "\n";
+    if (!achou) {
+        cout << "\nNao existe caminho de " << origem << " para " << destino << ".\n";
+        return;
+    }
+
+    vector<int> caminho;
+    for (int v = end; v != -1; v = anterior[v])
+        caminho.push_back(v);
+
+    reverse(caminho.begin(), caminho.end());
+
+    cout << "\nCaminho de '" << origem << "' ate '" << destino << "': ";
+    for (size_t i = 0; i < caminho.size(); i++) {
+        cout << usuarios[caminho[i]].nome;
+        if (i < caminho.size() - 1) cout << " -> ";
+    }
+    cout << "\n";
+}
+
+void Grafo::recomendarAmigos(const string& nome) {
+    int u = indiceDe(nome);
+
+    if (u == -1) {
+        cout << "Usuario nao encontrado.\n";
+        return;
+    }
+
+    vector<int> seguindo;
+    for (int j = 0; j < numVertices; j++)
+        if (matriz[u][j] == 1)
+            seguindo.push_back(j);
+
+    if (seguindo.empty()) {
+        cout << nome << " nao segue ninguem, sem recomendacoes.\n";
+        return;
+    }
+
+    vector<int> score(numVertices, 0);
+
+    for (int s : seguindo) {
+        for (int k = 0; k < numVertices; k++) {
+            if (matriz[s][k] == 1) {
+                score[k]++;
+            }
+        }
+    }
+
+    score[u] = 0;
+    for (int s : seguindo) score[s] = 0;
+
+    bool alguma = false;
+    for (int i = 0; i < numVertices; i++)
+        if (score[i] > 0)
+            alguma = true;
+
+    if (!alguma) {
+        cout << "Nenhuma recomendacao para " << nome << ".\n";
+        return;
+    }
+
+    cout << "Recomendacoes para " << nome << ":\n";
+    for (int i = 0; i < numVertices; i++) {
+        if (score[i] > 0) {
+            cout << "- " << usuarios[i].nome
+                 << " (seguido por " << score[i] << " pessoas que voce segue)\n";
         }
     }
 }
